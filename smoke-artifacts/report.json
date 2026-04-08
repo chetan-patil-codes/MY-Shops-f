@@ -1,0 +1,26 @@
+{
+  "appBaseUrl": "http://127.0.0.1:3000",
+  "results": [
+    {
+      "name": "home",
+      "url": "http://127.0.0.1:3000/",
+      "status": 200,
+      "title": "MY shops",
+      "screenshotPath": "C:\\Users\\Chetan\\E-COMMERCE - Copy\\frontend\\smoke-artifacts\\home.png"
+    },
+    {
+      "name": "products",
+      "url": "http://127.0.0.1:3000/products",
+      "status": 200,
+      "title": "MY shops",
+      "screenshotPath": "C:\\Users\\Chetan\\E-COMMERCE - Copy\\frontend\\smoke-artifacts\\products.png"
+    },
+    {
+      "name": "product-detail",
+      "url": "http://127.0.0.1:3000/products/samsung-galaxy-m14-5g",
+      "status": 200,
+      "title": "MY shops",
+      "screenshotPath": "C:\\Users\\Chetan\\E-COMMERCE - Copy\\frontend\\smoke-artifacts\\product-detail.png"
+    }
+  ]
+}
