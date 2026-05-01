@@ -1,26 +1,19 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth-provider";
-import { ThemeToggle } from "@/components/theme-toggle";
-
-const navLinks = [
-  { href: "/", label: "Home" },
-  { href: "/products", label: "Products" },
-  { href: "/login", label: "Login" },
-  { href: "/signup", label: "Signup" }
-];
-
-const categoryLinks = ["Mobiles", "Fashion", "Electronics", "Home", "Beauty", "Appliances"];
+import { useShop } from "@/components/shop-provider";
 
 export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout, isReady } = useAuth();
+  const { cart } = useShop();
   const userName = user?.name || "";
   const [query, setQuery] = useState("");
+  const [moreOpen, setMoreOpen] = useState(false);
 
   useEffect(() => {
     const syncFromLocation = () => {
@@ -46,96 +39,144 @@ export function Navbar() {
     router.push(qs ? `/products?${qs}` : "/products");
   }
 
+  function toggleDark() {
+    document.documentElement.classList.toggle("dark");
+  }
+
   return (
-    <header className="sticky top-0 z-30 border-b border-[#d9e8ff] bg-white/95 backdrop-blur">
-      <div className="mx-auto flex w-full max-w-7xl items-center gap-4 px-4 py-4 lg:px-6">
-        <Link href="/" className="flex items-center gap-3">
-          <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[linear-gradient(135deg,#0055ff,#37a6ff)] text-lg font-black text-white">
-            MY
-          </div>
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#5d7290]">
-              Modern storefront
-            </p>
-            <h1 className="text-2xl font-black tracking-tight text-[#12233d]">MY shops</h1>
-          </div>
-        </Link>
-
-        <form
-          onSubmit={onSubmitSearch}
-          className="hidden flex-1 items-center gap-3 rounded-full border border-[#d5e6ff] bg-[#f4f8ff] px-4 py-3 lg:flex"
-        >
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search mobiles, fashion, electronics, beauty..."
-            className="w-full bg-transparent text-sm font-semibold text-[#23406d] outline-none placeholder:text-[#7f93b2]"
-            aria-label="Search products"
-          />
-          <button
-            type="submit"
-            className="rounded-full bg-white px-4 py-2 text-sm font-bold text-[#0055ff] shadow-[0_10px_24px_rgba(9,73,177,0.12)]"
-          >
-            Search
-          </button>
-        </form>
-
-        <nav className="hidden items-center gap-2 lg:flex">
-          {navLinks.map((link) => {
-            const active = pathname === link.href;
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
-                  active ? "bg-[#0f6fff] text-white" : "text-[#23406d] hover:bg-[#eef5ff]"
-                }`}
-              >
-                {link.label}
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className="flex items-center gap-3">
-          <div className="hidden md:block">
-            <ThemeToggle />
-          </div>
-          <Link
-            href="/cart"
-            className="hidden rounded-full border border-[#d5e6ff] px-4 py-2 text-sm font-semibold text-[#23406d] md:block"
-          >
-            Cart
+    <>
+      <nav className="navbar">
+        <div className="nav-inner">
+          <Link href="/" className="logo">
+            <span>My Shops</span>
+            <span>Explore Plus</span>
           </Link>
-          {userName ? (
-            <button
-              type="button"
-              onClick={logout}
-              className="rounded-full bg-[#12233d] px-4 py-2 text-sm font-semibold text-white"
-            >
-              {userName} | Logout
+          <form className="search-bar" onSubmit={onSubmitSearch}>
+            <input
+              type="text"
+              placeholder="Search for products, brands and more"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+            <button type="submit">&#128269;</button>
+          </form>
+          <div className="nav-btns">
+            <button className="dark-toggle" onClick={toggleDark} title="Toggle dark mode" type="button">
+              &#9790;
             </button>
-          ) : (
-            <Link href="/login" className="rounded-full bg-[#12233d] px-4 py-2 text-sm font-semibold text-white">
-              {isReady ? "Account" : "Loading..."}
+            <div className="nav-btn">
+              {userName ? (
+                <button className="login-btn" onClick={logout} type="button">
+                  {userName}
+                </button>
+              ) : (
+                <Link href="/login">
+                  <button className="login-btn" type="button">{isReady ? "Login" : "Loading"}</button>
+                </Link>
+              )}
+            </div>
+            <Link href="/cart" className="nav-btn">
+              <span>&#128722;</span>
+              <span>Cart</span>
+              <span className="cart-count">{cart.length}</span>
             </Link>
-          )}
-        </div>
-      </div>
+            <div className={`more-wrap ${moreOpen ? "open" : ""}`}>
+              <button className="more-btn" onClick={() => setMoreOpen(!moreOpen)} type="button">
+                More <span className="more-arrow">&#9660;</span>
+              </button>
+              <div className="more-dropdown">
+                <div className="more-about-hero">
+                  <div className="more-about-logo">My Shops</div>
+                  <div className="more-about-tag">Explore Plus — India's Favourite Online Marketplace</div>
+                  <div className="more-about-desc">
+                    My Shops is India's leading e-commerce platform, connecting millions of buyers with trusted sellers across the country. From electronics and fashion to groceries and home essentials — we bring everything you need, right to your doorstep with guaranteed quality and unbeatable prices.
+                  </div>
+                  <div className="more-about-stats">
+                    <div className="more-stat"><div className="more-stat-val">500M+</div><div className="more-stat-label">Customers</div></div>
+                    <div className="more-stat"><div className="more-stat-val">1.4M+</div><div className="more-stat-label">Sellers</div></div>
+                    <div className="more-stat"><div className="more-stat-val">150M+</div><div className="more-stat-label">Products</div></div>
+                    <div className="more-stat"><div className="more-stat-val">26K+</div><div className="more-stat-label">Pincodes</div></div>
+                  </div>
+                </div>
 
-      <div className="border-t border-[#edf4ff] bg-[#f9fbff]">
-        <div className="mx-auto flex w-full max-w-7xl gap-2 overflow-x-auto px-4 py-3 lg:px-6">
-          {categoryLinks.map((category) => (
-            <Link
-              key={category}
-              href={`/products?category=${encodeURIComponent(category)}`}
-              className="shrink-0 rounded-full border border-[#d7e8ff] bg-white px-4 py-2 text-sm font-semibold text-[#295189]"
-            >
-              {category}
-            </Link>
-          ))}
+                <div className="more-mission" style={{ marginTop: "14px" }}>
+                  <div className="more-mission-title">&#127919; Our Mission</div>
+                  <div className="more-mission-text">To transform commerce in India through technology, making it simple, affordable and accessible for every Indian — from big cities to the smallest towns.</div>
+                </div>
+
+                <div className="more-features">
+                  <div className="more-feat-title">Why Shop with Us</div>
+                  <div className="more-feat-grid">
+                    <div className="more-feat-card" onClick={() => setMoreOpen(false)}>
+                      <div className="more-feat-icon">&#128666;</div>
+                      <div className="more-feat-name">Fast Delivery</div>
+                      <div className="more-feat-sub">Same day in 20+ cities</div>
+                    </div>
+                    <div className="more-feat-card" onClick={() => setMoreOpen(false)}>
+                      <div className="more-feat-icon">&#128260;</div>
+                      <div className="more-feat-name">Easy Returns</div>
+                      <div className="more-feat-sub">10-day hassle-free</div>
+                    </div>
+                    <div className="more-feat-card" onClick={() => setMoreOpen(false)}>
+                      <div className="more-feat-icon">&#128274;</div>
+                      <div className="more-feat-name">Secure Pay</div>
+                      <div className="more-feat-sub">100% safe checkout</div>
+                    </div>
+                    <div className="more-feat-card" onClick={() => setMoreOpen(false)}>
+                      <div className="more-feat-icon">&#11088;</div>
+                      <div className="more-feat-name">My Shops+</div>
+                      <div className="more-feat-sub">Free delivery & more</div>
+                    </div>
+                    <div className="more-feat-card" onClick={() => setMoreOpen(false)}>
+                      <div className="more-feat-icon">&#129689;</div>
+                      <div className="more-feat-name">SuperCoins</div>
+                      <div className="more-feat-sub">Earn on every order</div>
+                    </div>
+                    <div className="more-feat-card" onClick={() => setMoreOpen(false)}>
+                      <div className="more-feat-icon">&#128179;</div>
+                      <div className="more-feat-name">No-Cost EMI</div>
+                      <div className="more-feat-sub">On 1000+ products</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="more-divider"></div>
+
+                <div className="more-quick-links">
+                  <div className="more-quick-title">Quick Links</div>
+                  <div className="more-links-grid">
+                    <div className="more-item" onClick={() => setMoreOpen(false)}><span className="more-item-icon">&#128230;</span> My Orders</div>
+                    <div className="more-item" onClick={() => setMoreOpen(false)}><span className="more-item-icon">&#10084;</span> Wishlist</div>
+                    <div className="more-item" onClick={() => setMoreOpen(false)}><span className="more-item-icon">&#128100;</span> My Profile</div>
+                    <div className="more-item" onClick={() => setMoreOpen(false)}><span className="more-item-icon">&#127881;</span> Rewards &amp; Coupons</div>
+                    <div className="more-item" onClick={() => setMoreOpen(false)}><span className="more-item-icon">&#127873;</span> Gift Cards</div>
+                    <div className="more-item" onClick={() => setMoreOpen(false)}><span className="more-item-icon">&#10067;</span> Help Centre</div>
+                    <div className="more-item" onClick={() => setMoreOpen(false)}><span className="more-item-icon">&#128200;</span> Sell on My Shops</div>
+                    <div className="more-item" onClick={() => setMoreOpen(false)}><span className="more-item-icon">&#128276;</span> Notifications</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <div className="cat-bar">
+        <div className="cat-inner">
+          <Link href="/products?category=Grocery" className="cat-item"><div className="cat-emoji">&#127822;</div><span>Grocery</span></Link>
+          <Link href="/products?category=Mobiles" className="cat-item"><div className="cat-emoji">&#128241;</div><span>Mobiles</span></Link>
+          <Link href="/products?category=Fashion" className="cat-item"><div className="cat-emoji">&#128084;</div><span>Fashion</span></Link>
+          <Link href="/products?category=Electronics" className="cat-item"><div className="cat-emoji">&#128187;</div><span>Electronics</span></Link>
+          <Link href="/products?category=Home" className="cat-item"><div className="cat-emoji">&#127968;</div><span>Home</span></Link>
+          <Link href="/products?category=Appliances" className="cat-item"><div className="cat-emoji">&#128268;</div><span>Appliances</span></Link>
+          <Link href="/products?category=Travel" className="cat-item"><div className="cat-emoji">&#9992;</div><span>Travel</span></Link>
+          <Link href="/products?category=Beauty" className="cat-item"><div className="cat-emoji">&#128138;</div><span>Beauty</span></Link>
+          <Link href="/products?category=Toys" className="cat-item"><div className="cat-emoji">&#127902;</div><span>Toys</span></Link>
+          <Link href="/products?category=Sports" className="cat-item"><div className="cat-emoji">&#9917;</div><span>Sports</span></Link>
+          <Link href="/products?category=Books" className="cat-item"><div className="cat-emoji">&#128218;</div><span>Books</span></Link>
+          <Link href="/products?category=Vehicles" className="cat-item"><div className="cat-emoji">&#128664;</div><span>Vehicles</span></Link>
         </div>
       </div>
-    </header>
+    </>
   );
 }

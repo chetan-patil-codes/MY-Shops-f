@@ -1,4 +1,14 @@
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
+function normalizeApiBaseUrl(value: string | undefined) {
+  const fallback = "http://127.0.0.1:8000";
+  if (!value) return fallback;
+  const trimmed = value.trim().replace(/\/+$/, "");
+  if (!trimmed) return fallback;
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  // Allow setting just "my-api.onrender.com" in Vercel envs.
+  return `https://${trimmed}`;
+}
+
+export const API_BASE_URL = normalizeApiBaseUrl(process.env.NEXT_PUBLIC_API_BASE_URL);
 
 export type Category = {
   name: string;
@@ -44,6 +54,46 @@ export type AuthResponse = {
   user: User;
 };
 
+export type BannerSlide = {
+  id: string;
+  title: string;
+  subtitle: string;
+  cta: string;
+  theme: string;
+};
+
+export type DealCard = {
+  title: string;
+  subtitle: string;
+  savings: string;
+  category: string;
+};
+
+export type BrandOffer = {
+  brand: string;
+  offer: string;
+  category: string;
+};
+
+export type VideoAd = {
+  id: string;
+  title: string;
+  subtitle: string;
+  brand: string;
+  placement: string;
+  video_url: string;
+  cta: string;
+};
+
+export type HomeFeed = {
+  banners: BannerSlide[];
+  flash_sale: Product[];
+  top_picks: Product[];
+  deals: DealCard[];
+  brand_offers: BrandOffer[];
+  video_ads: VideoAd[];
+};
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...init,
@@ -78,6 +128,10 @@ export function getCategories() {
   return request<Category[]>("/categories");
 }
 
+export function getHomeFeed() {
+  return request<HomeFeed>("/home-feed");
+}
+
 export function signup(payload: { name: string; email: string; password: string }) {
   return request<AuthResponse>("/auth/signup", {
     method: "POST",
@@ -97,5 +151,12 @@ export function getCurrentUser(token: string) {
     headers: {
       Authorization: `Bearer ${token}`
     }
+  });
+}
+
+export function askAi(message: string) {
+  return request<{ reply: string }>("/ai/chat", {
+    method: "POST",
+    body: JSON.stringify({ message })
   });
 }
